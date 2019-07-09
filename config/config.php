@@ -13,7 +13,7 @@ define('DB_USER', 'user12');
 define('DB_PASSWORD', 'user12');
 define('DB_NAME', 'user12');
 define('DB_DEFAULT_CHARSET', 'utf8');
-define('DB_PREFIX', 'bookук_');
+define('DB_PREFIX', 'booker_');
 
 //DataConverter config
 define('TO_JSON', '.json');

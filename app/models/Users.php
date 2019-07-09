@@ -20,10 +20,23 @@ class Users extends Model
         return $this->pdo->execute($sql, [$login, $password, $first_name, $last_name, $email]);
     }
 
-    public function find($id, $field)
+    public function findUser($login)
     {
-        $sql ="SELECT WHERE ? = ?";
+        $sql = "SELECT id, login, password_hash FROM {$this->table} WHERE login = ?";
+       return $this->pdo->query($sql, [$login]);
+    }
 
+    public function logIn($token, $id)
+    {
+        $sql = "UPDATE {$this->table} SET token = ? WHERE id = ?";
+        return $this->pdo->execute($sql, [$token, $id]);
+    }
+
+    public function changePassword($password, $id)
+    {
+        $password_hash = password_hash($password, PASSWORD_DEFAULT);
+        $sql = "UPDATE {$this->table} SET password_hash = ? WHERE id = ?";
+        return $this->pdo->execute($sql, [$password_hash, $id]);
     }
 
     public function update()

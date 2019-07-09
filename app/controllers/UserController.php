@@ -13,12 +13,12 @@ use app\models\Users;
 
 class UserController extends Controller
 {
-    private $user;
+    private $users;
 
     public function __construct($route)
     {
         parent::__construct($route);
-        $this->user = new Users();
+        $this->users = new Users();
     }
 
     public function postSignUp($params)
@@ -34,10 +34,10 @@ class UserController extends Controller
 
         if (CommonHelper::check_length($password, 8, 20) && ($password == $retry) && filter_var($email, FILTER_VALIDATE_EMAIL) && CommonHelper::check_length($login, 5, 25) )
         {
-            if($this->user->isUnique($login))
+            if($this->users->isUnique($login))
             {
                 $password = password_hash($password, PASSWORD_DEFAULT);
-                if ($this->user->create($login, $password,$first_name, $last_name, $email)){
+                if ($this->users->create($login, $password,$first_name, $last_name, $email)){
                     $this->setData(['result'=>true]);
                 }
             }else{
@@ -52,20 +52,22 @@ class UserController extends Controller
     {
         $login = CommonHelper::cleanPostString($params['login']);
         $password = CommonHelper::cleanPostString($params['password']);
-
-        $sql = "SELECT id, login, password FROM ashop_users WHERE login = ?";
-        $result = $this->pdo->query($sql, [$login]);
-
-        $password_hash = $result[0]['password'];
-        if (password_verify($password, $password_hash)){
-            $sql = "UPDATE ashop_users SET token = ? WHERE id = ?";
-            $token = md5($result[0]['login'].microtime());
-            if($this->pdo->execute($sql, [$token, $result[0]['id']])){
-                return ['token' => $token];
+        $result = $this->users->findUser($login);
+        if(!empty($result)){
+            $password_hash = $result[0]['password_hash'];
+            if (password_verify($password, $password_hash)){
+                $token = md5($result[0]['login'].microtime());
+                if($this->users->logIn($token, $result[0]['id'])){
+                    $this->setData(['token' => $token]);
+                }else{
+                    $this->setData(['token' => false]);
+                }
+            }else{
+                $this->setData(['token' => false]);
             }
+        }else{
+            $this->setData(['token' => false]);
         }
-        return ['token' => false];
-
     }
 
     public function putLogOut($params)

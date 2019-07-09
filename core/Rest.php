@@ -12,7 +12,7 @@ class Rest
 
 
 
-    public function dispatch($url)
+    public static function dispatch($url)
     {
         self::$method = $_SERVER['REQUEST_METHOD'];
 
@@ -27,14 +27,14 @@ class Rest
             switch(self::$method)
             {
                 case 'GET':
-                    self::callMethod('get'.ucfirst(self::$route['method']),  explode('/', self::$route['params']));
+                    $result = self::callMethod('get'.ucfirst(self::$route['method']),  explode('/', self::$route['params']));
                     break;
                 case 'DELETE':
-                    self::callMethod('delete'.ucfirst(self::$route['method']), self::$route['params']);
+                    $result = self::callMethod('delete'.ucfirst(self::$route['method']), self::$route['params']);
                     break;
                 case 'POST':
                     $params = $_POST;
-                    self::callMethod('post'.ucfirst(self::$route['method']), $params);
+                    $result = self::callMethod('post'.ucfirst(self::$route['method']), $params);
                     break;
                 case 'PUT':
                     $params = [];
@@ -48,7 +48,7 @@ class Rest
                             $params[urldecode($item[0])] = urldecode($item[1]);
                         }
                     }
-                    self::callMethod('put'.ucfirst(self::$route['method']), $params);
+                    $result = self::callMethod('put'.ucfirst(self::$route['method']), $params);
                     break;
                 case 'OPTIONS':
 
@@ -56,7 +56,9 @@ class Rest
                 default:
                     return false;
             }
-            self::$service->getView();
+            if($result !== 'noMethod'){
+                self::$service->getView();
+            }
         }else{
             http_response_code(404);
             echo "Контроллер ".self::$route['controller']." не найден";
@@ -73,6 +75,7 @@ class Rest
         {
             http_response_code(404);
             echo "Метод $method не найден";
+            return 'noMethod';
         }
     }
 

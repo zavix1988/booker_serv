@@ -6,6 +6,7 @@
  * Time: 19:13
  */
 
+
 use core\Rest;
 
 $query = rtrim(substr($_SERVER['REQUEST_URI'], strpos($_SERVER['REQUEST_URI'], 'api')+4),'/');
