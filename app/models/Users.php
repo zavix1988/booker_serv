@@ -22,7 +22,7 @@ class Users extends Model
 
     public function findUser($login)
     {
-        $sql = "SELECT id, login, password_hash FROM {$this->table} WHERE login = ?";
+        $sql = "SELECT id, login, password_hash, role FROM {$this->table} WHERE login = ?";
        return $this->pdo->query($sql, [$login]);
     }
 
@@ -37,6 +37,23 @@ class Users extends Model
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
         $sql = "UPDATE {$this->table} SET password_hash = ? WHERE id = ?";
         return $this->pdo->execute($sql, [$password_hash, $id]);
+    }
+
+    public function checkLoginedUser($login)
+    {
+        $sql = "SELECT token, role FROM {$this->table} WHERE login = ?";
+        $result = $this->pdo->query($sql, [$login]);
+        if($result && !empty($result)){
+            return $result[0];
+        }else{
+            return false;
+        }
+    }
+
+    public function getUsers()
+    {
+        $sql = "SELECT first_name, last_name, email FROM {$this->table} WHERE role != 'admin'";
+        return $this->pdo->query($sql);
     }
 
     public function update()

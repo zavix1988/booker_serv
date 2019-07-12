@@ -58,7 +58,7 @@ class UserController extends Controller
             if (password_verify($password, $password_hash)){
                 $token = md5($result[0]['login'].microtime());
                 if($this->users->logIn($token, $result[0]['id'])){
-                    $this->setData(['token' => $token]);
+                    $this->setData(['login' => $login,'token' => $token, 'role'=> $result[0]['role']]);
                 }else{
                     $this->setData(['token' => false]);
                 }
