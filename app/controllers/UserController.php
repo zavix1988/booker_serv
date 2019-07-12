@@ -21,32 +21,7 @@ class UserController extends Controller
         $this->users = new Users();
     }
 
-    public function postSignUp($params)
-    {
 
-
-        $login = CommonHelper::cleanPostString($params['login']);
-        $password = CommonHelper::cleanPostString($params['password']);
-        $retry = CommonHelper::cleanPostString($params['retry']);
-        $email = CommonHelper::cleanPostString($params['email']);
-        $first_name = CommonHelper::cleanPostString($params['first_name']);
-        $last_name = CommonHelper::cleanPostString($params['last_name']);
-
-        if (CommonHelper::check_length($password, 8, 20) && ($password == $retry) && filter_var($email, FILTER_VALIDATE_EMAIL) && CommonHelper::check_length($login, 5, 25) )
-        {
-            if($this->users->isUnique($login))
-            {
-                $password = password_hash($password, PASSWORD_DEFAULT);
-                if ($this->users->create($login, $password,$first_name, $last_name, $email)){
-                    $this->setData(['result'=>true]);
-                }
-            }else{
-                $this->setData(['result'=>false, 'unique'=>false]);
-            }
-        }else{
-            $this->setData(['result'=>false, 'validation'=>false]);
-        }
-    }
 
     public function putLogIn($params)
     {
