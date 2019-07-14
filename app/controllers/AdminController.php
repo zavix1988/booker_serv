@@ -27,12 +27,11 @@ class AdminController extends Controller
         $token = CommonHelper::clean($params[1]);
 
         $result = $this->users->checkLoginedUser($login);
-        //$this->setData([$result]);
         if($token == $result['token']){
             if($result['role'] == 'admin'){
                 $users = $this->users->getUsers();
                 if(!empty($users)){
-                    $this->setData([$users]);
+                    $this->setData($users);
                 }
             }else{
 
@@ -43,10 +42,15 @@ class AdminController extends Controller
 
     }
 
+    public function getUser($params)
+    {
+        $login = $params[0];
+        $result = $this->users->getUser($login);
+        $this->setData($result[0]);
+    }
+
     public function postRegister($params)
     {
-
-
         $login = CommonHelper::cleanPostString($params['login']);
         $password = CommonHelper::cleanPostString($params['password']);
         $retry = CommonHelper::cleanPostString($params['retry']);
@@ -68,6 +72,29 @@ class AdminController extends Controller
         }else{
             $this->setData(['result'=>false, 'validation'=>false]);
         }
+    }
+
+    public function putUpdateUser($params)
+    {
+
+    }
+
+    public function deleteUser($login)
+    {
+        $login = CommonHelper::cleanPostString($login);
+        $result = $this->users->delete($login);
+        if($result){
+            $this->setData($result);
+        }else{
+            $this->setData(['result' => false]);
+        }
+
+
+    }
+
+    private function chechAdmin($login, $token)
+    {
+
     }
 
 }

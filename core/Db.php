@@ -15,6 +15,8 @@ class Db
 
     protected $dbh;
 
+    private $rowsCount;
+
 
     protected function __construct()
     {
@@ -37,7 +39,12 @@ class Db
     public function execute($sql, $params = [])
     {
         $sth = $this->dbh->prepare($sql);
-        return $sth->execute($params);
+        if($sth->execute($params)){
+            $this->countRows = $sth->rowCount();
+            return true;
+        }else {
+            return false;
+        }
     }
 
     public function query($sql, $params = [])
@@ -48,5 +55,9 @@ class Db
             return $sth->fetchAll();
         }
         return [];
+    }
+
+    public function getRowsCount(){
+        return $this->rowsCount;
     }
 }

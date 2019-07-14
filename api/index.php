@@ -6,6 +6,7 @@
  * Time: 19:13
  */
 
+//var_dump(password_hash('admin', PASSWORD_DEFAULT));die;
 
 use core\Rest;
 

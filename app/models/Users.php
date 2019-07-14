@@ -16,14 +16,20 @@ class Users extends Model
 
     public function create($login, $password, $first_name, $last_name, $email)
     {
-        $sql = "INSERT INTO {$this->table} (login, password_hash, first_name, last_name, email, role, discount_id) VALUES (?, ?, ?, ?, ?, 'user', 1)";
+        $sql = "INSERT INTO {$this->table} (login, password_hash, first_name, last_name, email, role, token, is_active) VALUES (?, ?, ?, ?, ?, 'user', '', 1)";
         return $this->pdo->execute($sql, [$login, $password, $first_name, $last_name, $email]);
     }
 
     public function findUser($login)
     {
         $sql = "SELECT id, login, password_hash, role FROM {$this->table} WHERE login = ?";
-       return $this->pdo->query($sql, [$login]);
+        return $this->pdo->query($sql, [$login]);
+    }
+
+    public function getUser($login)
+    {
+        $sql = "SELECT login, first_name, last_name, email FROM {$this->table} WHERE login = ?";
+        return $this->pdo->query($sql, [$login]);
     }
 
     public function logIn($token, $id)
@@ -52,7 +58,7 @@ class Users extends Model
 
     public function getUsers()
     {
-        $sql = "SELECT first_name, last_name, email FROM {$this->table} WHERE role != 'admin'";
+        $sql = "SELECT first_name, last_name, email, login FROM {$this->table} WHERE role != 'admin' AND is_active != 0";
         return $this->pdo->query($sql);
     }
 
@@ -61,9 +67,13 @@ class Users extends Model
         
     }
 
-    public function delete()
+    public function delete($login)
     {
-        
+        $sql = "UPDATE {$this->table} SET is_active = 0 WHERE login = ?";
+
+        $result = $this->pdo->execute($sql, [$login]);
+        $rowsCount = $this->pdo->getRowsCount();
+        return compact('result', 'rowsCount');
     }
 
     public function isUnique($login){
