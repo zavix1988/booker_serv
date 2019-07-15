@@ -14,25 +14,55 @@ class Users extends Model
 {
     protected $table = 'users';
 
+
+
+    //Create
+    
     public function create($login, $password, $first_name, $last_name, $email)
     {
         $sql = "INSERT INTO {$this->table} (login, password_hash, first_name, last_name, email, role, token, is_active) VALUES (?, ?, ?, ?, ?, 'user', '', 1)";
         return $this->pdo->execute($sql, [$login, $password, $first_name, $last_name, $email]);
     }
 
-    public function findUser($login)
+
+    //Read
+
+
+    public function getUsers()
     {
-        $sql = "SELECT id, login, password_hash, role FROM {$this->table} WHERE login = ?";
-        return $this->pdo->query($sql, [$login]);
+        $sql = "SELECT first_name, last_name, email, login FROM {$this->table} WHERE role != 'admin' AND is_active != 0";
+        return $this->pdo->query($sql);
     }
 
     public function getUser($login)
     {
-        $sql = "SELECT login, first_name, last_name, email FROM {$this->table} WHERE login = ?";
+        $sql = "SELECT id, login, first_name, last_name, email, password_hash, role FROM {$this->table} WHERE login = ?";
         return $this->pdo->query($sql, [$login]);
     }
+    
+    public function checkLoginedUser($login)
+    {
+        $sql = "SELECT token, role FROM {$this->table} WHERE login = ?";
+        $result = $this->pdo->query($sql, [$login]);
+        if($result && !empty($result)){
+            return $result[0];
+        }else{
+            return false;
+        }
+    }
 
-    public function logIn($token, $id)
+    public function isUnique($login){
+        $sql = "SELECT login FROM {$this->table} WHERE login = ?";
+        $result = $this->pdo->query($sql, [$login]);
+        if(count($result) > 0){
+            return false;
+        }
+        return true;
+    }
+
+    //Update
+
+    public function changeToken($token, $id)
     {
         $sql = "UPDATE {$this->table} SET token = ? WHERE id = ?";
         return $this->pdo->execute($sql, [$token, $id]);
@@ -45,43 +75,19 @@ class Users extends Model
         return $this->pdo->execute($sql, [$password_hash, $id]);
     }
 
-    public function checkLoginedUser($login)
+    public function updateUser($id, $first_name, $last_name, $email)
     {
-        $sql = "SELECT token, role FROM {$this->table} WHERE login = ?";
-        $result = $this->pdo->query($sql, [$login]);
-        if($result && !empty($result)){
-            return $result[0];
-        }else{
-            return false;
-        }
+        $sql = "UPDATE {$this->table} SET first_name = ?, last_name = ?, email = ? WHERE id = ?" ;
+        return $this->pdo->execute($sql, [$first_name, $last_name, $email, $id]);
     }
 
-    public function getUsers()
-    {
-        $sql = "SELECT first_name, last_name, email, login FROM {$this->table} WHERE role != 'admin' AND is_active != 0";
-        return $this->pdo->query($sql);
-    }
-
-    public function update()
-    {
-        
-    }
+    //Delete
 
     public function delete($login)
     {
         $sql = "UPDATE {$this->table} SET is_active = 0 WHERE login = ?";
-
         $result = $this->pdo->execute($sql, [$login]);
         $rowsCount = $this->pdo->getRowsCount();
         return compact('result', 'rowsCount');
-    }
-
-    public function isUnique($login){
-        $sql = "SELECT login FROM {$this->table} WHERE login = ?";
-        $result = $this->pdo->query($sql, [$login]);
-        if(count($result) > 0){
-            return false;
-        }
-        return true;
     }
 }

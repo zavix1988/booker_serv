@@ -27,12 +27,12 @@ class UserController extends Controller
     {
         $login = CommonHelper::cleanPostString($params['login']);
         $password = CommonHelper::cleanPostString($params['password']);
-        $result = $this->users->findUser($login);
+        $result = $this->users->getUser($login);
         if(!empty($result)){
             $password_hash = $result[0]['password_hash'];
             if (password_verify($password, $password_hash)){
                 $token = md5($result[0]['login'].microtime());
-                if($this->users->logIn($token, $result[0]['id'])){
+                if($this->users->changeToken($token, $result[0]['id'])){
                     $this->setData(['login' => $login,'token' => $token, 'role'=> $result[0]['role']]);
                 }else{
                     $this->setData(['token' => false]);
@@ -47,7 +47,19 @@ class UserController extends Controller
 
     public function putLogOut($params)
     {
-        $token = cleanPostString($params['token']);
+        $login = CommonHelper::cleanPostString($params['login']);
+        $token = CommonHelper::cleanPostString($params['token']);
+        $result = $this->users->getUser($login);
+        if(!empty($result))
+        {
+            $this->users->changeToken('', $result[0]['id']);
+            $this->setData(['result' => true]);
+        }
+        else
+        {
+            $this->setData(['result' => false]);
+        }
+        
 
     }
 }
