@@ -11,10 +11,10 @@ class Events extends Model
     //Create
     //Read
 
-    public function getEvents($room)
+    public function getEvents($room, $date)
     {
-        $sql = "SELECT * FROM {$this->table} WHERE room_id = ? AND start_time > '20190701' AND start_time < '20190801'";
-        return $this->pdo->query($sql, [$room]);
+        $sql = "SELECT * FROM {$this->table} WHERE room_id = ? AND start_time > ? AND start_time < ?";
+        return $this->pdo->query($sql, [$room, $date, $date+100]);
     }
 
     //Update
