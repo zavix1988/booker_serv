@@ -9,12 +9,20 @@ class Events extends Model
 
 
     //Create
+
+    public function createEvent($userId, $roomId, $note, $dateStart, $dateEnd, $dateCreated)
+    {
+        
+    }
+    
     //Read
 
-    public function getEvents($room, $date)
+    public function getEvents($room, $month, $year)
     {
-        $sql = "SELECT * FROM {$this->table} WHERE room_id = ? AND start_time > ? AND start_time < ?";
-        return $this->pdo->query($sql, [$room, $date, $date+100]);
+        $sql = "SELECT id, user_id, room_id, note, UNIX_TIMESTAMP(start_time) as startEvent, UNIX_TIMESTAMP(end_time) as endEvent, UNIX_TIMESTAMP(create_time) as createdEvent
+                        FROM booker_events
+                        WHERE boardroom_id = ? AND MONTH(start_time) = ? AND YEAR(start_time) = ?";
+        return $this->pdo->query($sql, [$room, $month, $year]);
     }
 
     //Update
