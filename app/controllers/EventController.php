@@ -5,6 +5,7 @@ namespace app\controllers;
 use core\base\Controller;
 use core\CommonHelper;
 use app\models\Events;
+use app\models\Users;
 
 class EventController extends Controller
 {
@@ -14,6 +15,7 @@ class EventController extends Controller
     {
         parent::__construct($route);
         $this->events = new Events();
+        $this->users = new Users(); 
     }
 
     public function getRoomEvents($params)
@@ -29,6 +31,6 @@ class EventController extends Controller
 
     public function postRoomEvent($params)
     {
-
+        $this->setData($params);
     }
 }

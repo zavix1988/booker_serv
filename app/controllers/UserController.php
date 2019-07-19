@@ -59,7 +59,5 @@ class UserController extends Controller
         {
             $this->setData(['result' => false]);
         }
-        
-
     }
 }
