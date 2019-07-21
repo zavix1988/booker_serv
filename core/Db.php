@@ -60,4 +60,8 @@ class Db
     public function getRowsCount(){
         return $this->rowsCount;
     }
+
+    public function lastInsertId(){
+        return $this->dbh->lastInsertId();
+    }
 }
