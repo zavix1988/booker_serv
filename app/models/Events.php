@@ -111,37 +111,44 @@ class Events extends Model
 
     public function getEvents($room, $month, $year)
     {
-        $sql = "SELECT id, user_id, room_id, note, UNIX_TIMESTAMP(start_time) as startEvent, UNIX_TIMESTAMP(end_time) as endEvent, UNIX_TIMESTAMP(create_time) as createdEvent
-                        FROM booker_events
+        $sql = "SELECT be.id, user_id, bu.login, bu.first_name, bu.last_name, room_id, note, UNIX_TIMESTAMP(start_time) as startEvent, UNIX_TIMESTAMP(end_time) as endEvent, UNIX_TIMESTAMP(create_time) as createdEvent
+                        FROM {$this->table} be
+                        INNER JOIN booker_users bu ON bu.id = user_id
                         WHERE room_id = ? AND MONTH(start_time) = ? AND YEAR(start_time) = ? ORDER BY UNIX_TIMESTAMP(end_time) ASC ";
         return $this->pdo->query($sql, [$room, $month, $year]);
     }
 
-    public function getOneEvent($id)
-    {
-
+    public function getEventById($eventId){
+        $sql = "SELECT be.id, user_id, bu.login, bu.first_name, bu.last_name, room_id, note, UNIX_TIMESTAMP(start_time) as startEvent, UNIX_TIMESTAMP(end_time) as endEvent, UNIX_TIMESTAMP(create_time) as createdEvent 
+                  FROM {$this->table} be
+                  INNER JOIN booker_users bu ON bu.id = user_id 
+                  WHERE be.id = ? LIMIT 1";
+        return $this->pdo->query($sql, [$eventId]);
     }
 
     //Update
+
+    public function updateEvent($eventId, $roomId, $userId, $start, $end, $note)
+    {
+
+        $sql = "UPDATE {$this->table} SET user_id = ?, room_id = ?, start_time = ?, end_time = ?, note = ? WHERE id = ?";
+        return $this->pdo->execute($sql, [$userId, $roomId, $start, $end, $note, $eventId]);
+
+    }
+
     //Delete
 
-/*    public function deleteEventById($eventId, $allEvents=false)
+    public function deleteEvent($eventId)
     {
-        if ($allEvents)
-        {
-            $result = $this->sql->delete("b_bookings", "id='$eventId'")
-                ->l_or("booking_id='$eventId'")
-                ->doQuery();
-        } else {
-            $result = $this->sql->delete("b_bookings", "id='$eventId'")
-                ->doQuery();
+        $sql = "DELETE FROM {$this->table} WHERE id = ?";
+        if($this->pdo->execute($sql, [$eventId])){
+            $sql = "DELETE FROM booker_parentroom_room WHERE room_id = ?";
+            return $this->pdo->execute($sql, [$eventId]);
         }
-        if ($result)
-        {
-            return ["status" => "success"];
-        }
-        return ["status" => "error"];
-    }*/
+        return false;
+    }
+
+
 
 
     public function checkTimeEvent($timestampStart, $timestampEnd, $room, $id = false)
@@ -173,4 +180,9 @@ class Events extends Model
         return true;
     }
 
+    public function checkHolidays($timestamp)
+    {
+        $day = date('N', $timestamp);
+        return !((int)$day >= 6);
+    }
 }

@@ -30,7 +30,7 @@ class Rest
                     $result = self::callMethod('get'.ucfirst(self::$route['method']),  explode('/', self::$route['params']));
                     break;
                 case 'DELETE':
-                    $result = self::callMethod('delete'.ucfirst(self::$route['method']), self::$route['params']);
+                    $result = self::callMethod('delete'.ucfirst(self::$route['method']), explode('/', self::$route['params']));
                     break;
                 case 'POST':
                     $params = $_POST;
