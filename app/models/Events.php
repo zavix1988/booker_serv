@@ -42,7 +42,7 @@ class Events extends Model
                         VALUES (?, ?, ?, ?, ?, ?)";
                         if($this->pdo->execute($sql, [$userId, $room, $created, $repeatStartDate, $repeatEndDate, $note])){
                             $eventId = $this->pdo->lastInsertId();
-                            $sql = "INSERT INTO ".DB_PREFIX."parentroom_room (parent_room_id, room_id) VALUES (?, ?)";
+                            $sql = "INSERT INTO ".DB_PREFIX."parentevent_event (parent_event_id, event_id) VALUES (?, ?)";
                             $this->pdo->execute($sql, [$parentId, $eventId]);
                         }
                     } else {
@@ -64,7 +64,7 @@ class Events extends Model
                         VALUES (?, ?, ?, ?, ?, ?)";
                         if($this->pdo->execute($sql, [$userId, $room, $created, $repeatStartDate, $repeatEndDate, $note])){
                             $eventId = $this->pdo->lastInsertId();
-                            $sql = "INSERT INTO ".DB_PREFIX."parentroom_room (parent_room_id, room_id) VALUES (?, ?)";
+                            $sql = "INSERT INTO ".DB_PREFIX."parentevent_event (parent_event_id, event_id) VALUES (?, ?)";
                             $this->pdo->execute($sql, [$parentId, $eventId]);
                         }
                     } else {
@@ -96,7 +96,7 @@ class Events extends Model
                         VALUES (?, ?, ?, ?, ?, ?)";
                     if($this->pdo->execute($sql, [$userId, $room, $created, $repeatStartDate, $repeatEndDate, $note])){
                         $eventId = $this->pdo->lastInsertId();
-                        $sql = "INSERT INTO ".DB_PREFIX."parentroom_room (parent_room_id, room_id) VALUES (?, ?)";
+                        $sql = "INSERT INTO ".DB_PREFIX."parentevent_event (parent_event_id, event_id) VALUES (?, ?)";
                         $this->pdo->execute($sql, [$parentId, $eventId]);
                     }
                 } else {
@@ -111,11 +111,23 @@ class Events extends Model
 
     public function getEvents($room, $month, $year)
     {
-        $sql = "SELECT be.id, user_id, bu.login, bu.first_name, bu.last_name, room_id, note, UNIX_TIMESTAMP(start_time) as startEvent, UNIX_TIMESTAMP(end_time) as endEvent, UNIX_TIMESTAMP(create_time) as createdEvent
+        $sql = "SELECT be.id AS event_id, bu.login, bu.first_name, bu.last_name, room_id, note, UNIX_TIMESTAMP(start_time) as startEvent, UNIX_TIMESTAMP(end_time) as endEvent, UNIX_TIMESTAMP(create_time) as createdEvent
                         FROM {$this->table} be
                         INNER JOIN booker_users bu ON bu.id = user_id
                         WHERE room_id = ? AND MONTH(start_time) = ? AND YEAR(start_time) = ? ORDER BY UNIX_TIMESTAMP(end_time) ASC ";
-        return $this->pdo->query($sql, [$room, $month, $year]);
+        $result =  $this->pdo->query($sql, [$room, $month, $year]);
+
+        for($i = 0; $i<count($result); $i++){
+
+            $sql = "SELECT COUNT(*) as count FROM booker_parentevent_event WHERE parent_event_id = ?";
+            $parent = $this->pdo->query($sql, [$result[$i]['event_id']]);
+            if($parent[0]['count'] > 0){
+                $result[$i]['parent'] = true;
+            }else{
+                $result[$i]['parent'] = false;
+            }
+        }
+        return $result;
     }
 
     public function getEventById($eventId){
@@ -142,8 +154,16 @@ class Events extends Model
     {
         $sql = "DELETE FROM {$this->table} WHERE id = ?";
         if($this->pdo->execute($sql, [$eventId])){
-            $sql = "DELETE FROM booker_parentroom_room WHERE room_id = ?";
-            return $this->pdo->execute($sql, [$eventId]);
+            $sql = "SELECT * FROM {$this->table} 
+                    INNER JOIN ".DB_PREFIX."parentevent_event ON booker_events.id = booker_parentevent_event.event_id
+                    WHERE ".DB_PREFIX."parentevent_event.parent_event_id = ?";
+                    $result = $this->pdo->execute($sql, [$eventId]);
+                    foreach($result as $event){
+
+                    }
+
+            //$sql = "DELETE FROM ".DB_PREFIX."parentevent_event WHERE parent_event_id = ?";
+           return $this->pdo->execute($sql, [$eventId]);
         }
         return false;
     }

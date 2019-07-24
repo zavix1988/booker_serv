@@ -149,6 +149,7 @@ class EventController extends Controller
         $eventId = CommonHelper::cleanPostString($params[0]);
         $user = CommonHelper::cleanPostString($params[1]);
         $token = CommonHelper::cleanPostString($params[2]);
+        $delRecurrences = CommonHelper::cleanPostString($params[3]);
 
         $userData = $this->users->checkLoginedUser($user);
         if($userData['token'] != $token){
@@ -157,11 +158,17 @@ class EventController extends Controller
         }else{
             $result = $this->events->getEventById($eventId);
             if($result[0] && (count($result[0]) > 0)){
-                if($result[0]['login'] == $user || $user == 'admin')
-                $this->events->deleteEvent($eventId);
-                $this->setData(['result'=>'success']);
-            }else{
-                $this->setData(['result'=> false, 'error' => 'permission_denied']);
+                if($result[0]['login'] == $user || $user == 'admin'){
+                    if ($delRecurrences == 'all'){
+                        $this->events->deleteEvent($eventId, true);
+                        $this->setData(['result'=>'success']);
+                    }else{
+                        $this->events->deleteEvent($eventId);
+                        $this->setData(['result'=>'success']);
+                    }
+                }else{
+                    $this->setData(['result'=> false, 'error' => 'permission_denied']);
+                }
             }
         }
     }
